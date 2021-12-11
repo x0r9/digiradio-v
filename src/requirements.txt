@@ -1,0 +1,9 @@
+aprs==7.0.0
+bitarray==2.3.4
+certifi==2021.10.8
+charset-normalizer==2.0.9
+idna==3.3
+kiss==7.0.0
+pyserial==3.5
+requests==2.26.0
+urllib3==1.26.7
