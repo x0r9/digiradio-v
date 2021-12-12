@@ -44,7 +44,6 @@ class FrameReader(object):
         sts, shex = tuple(line.split(","))
 
         ts = float(sts)
-        print(sts, shex)
         frame = hex_to_bin(shex)
 
         return (ts, frame)
