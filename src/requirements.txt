@@ -1,4 +1,5 @@
 aprs==7.0.0
+aprslib==0.7.0
 bitarray==2.3.4
 certifi==2021.10.8
 charset-normalizer==2.0.9
