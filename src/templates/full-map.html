@@ -16,6 +16,7 @@
         {
             // load up the map...
              mapping_map = L.map('mapid').setView({{config.map.center_start}}, {{config.map.zoom_start}});
+
              L.tileLayer('{{config.map.url}}', {
                 attribution: '{{config.map.attribution|safe}}',
                 maxZoom: 18,
@@ -26,8 +27,8 @@
     </script>
 
     </head>
-    <body onload="mapping_onload();">
-    <div id="mapid" style="width:500px; height:500px; background-color: #FBD603;"></div>
+    <body onload="mapping_onload();" style="margin:0px;">
+    <div id="mapid" style="padding:0px; width:calc(100vw); height:calc(100vh); background-color: #FBD603;"></div>
     </body>
 </html>
 
