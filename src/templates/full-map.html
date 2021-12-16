@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+    <head>
+    <style>
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+        crossorigin=""/>
+
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+        crossorigin=""></script>
+
+    <script>
+        function mapping_onload()
+        {
+            // load up the map...
+             mapping_map = L.map('mapid').setView({{config.map.center_start}}, {{config.map.zoom_start}});
+             L.tileLayer('{{config.map.url}}', {
+                attribution: '{{config.map.attribution|safe}}',
+                maxZoom: 18,
+                id: '{{config.map.id}}',
+                accessToken: '{{config.map.access_token}}'
+            }).addTo(mapping_map);
+        }
+    </script>
+
+    </head>
+    <body onload="mapping_onload();">
+    <div id="mapid" style="width:500px; height:500px; background-color: #FBD603;"></div>
+    </body>
+</html>
+
