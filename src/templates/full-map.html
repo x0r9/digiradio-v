@@ -11,6 +11,8 @@
         integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
         crossorigin=""></script>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
     <script>
         function mapping_onload()
         {
@@ -23,7 +25,38 @@
                 id: '{{config.map.id}}',
                 accessToken: '{{config.map.access_token}}'
             }).addTo(mapping_map);
+
+            // Icon options
+            var iconOptions = {
+                iconUrl: 'static/basic_symbol.png',
+                iconSize: [16, 16]
+            }
+            // Creating a custom icon
+            customIcon = L.icon(iconOptions);
+
+            load_points();
         }
+
+        function load_points()
+        {
+            $.getJSON( "last-points/36000", function( data ) {
+                $.each( data.points, function( n, point ) {
+                       var marker = L.marker([point.latitude, point.longitude],
+                            {title: point.from, icon:customIcon, clickable: true}).addTo(mapping_map);
+                       var text = 'from :'+point.from;
+                       if ("object_name" in point)
+                       {
+                            text = point.object_name + ' ' + text;
+                       }
+                       marker.bindPopup(text);
+                    });
+
+
+            });
+
+        }
+
+
     </script>
 
     </head>

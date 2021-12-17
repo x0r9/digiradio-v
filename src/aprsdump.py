@@ -29,5 +29,5 @@ if __name__ == "__main__":
     kclient = kiss.TCPKISS(args.ip, port=args.port)
 
     kclient.start()
-    kclient.read(callback=_on_aprs_frame) 
+    kclient.read(callback=_on_aprs_frame)
 

@@ -6,6 +6,9 @@ from fastapi.templating import Jinja2Templates
 import os
 import json
 
+#Local modules
+import aprs_data
+
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -22,6 +25,10 @@ config = get_config()
 @app.get("/items/{id}", response_class=HTMLResponse)
 async def read_item(request: Request, id: str):
     return templates.TemplateResponse("item.html", {"request": request, "id": id})
+
+@app.get("/last-points/{window_secs}")
+async def last_points(request: Request, window_secs: int):
+    return {"points":aprs_data.get_last_points(window_secs)}
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
