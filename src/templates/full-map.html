@@ -2,14 +2,13 @@
 <html>
     <head>
     <link rel="icon" type="image/png" sizes="96x96" href="/static/favicon.png">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
-        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-        crossorigin=""/>
-
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+          integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+          crossorigin="" />
     <!-- Make sure you put this AFTER Leaflet's CSS -->
-    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
-        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
-        crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+            integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+            crossorigin=""></script>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
@@ -39,7 +38,7 @@
 
         function load_points()
         {
-            $.getJSON( "last-points/36000", function( data ) {
+            $.getJSON( "last-points/360000", function( data ) {
                 $.each( data.points, function( n, point ) {
                        var marker = L.marker([point.latitude, point.longitude],
                             {title: point.from, icon:customIcon, clickable: true}).addTo(mapping_map);
@@ -49,6 +48,20 @@
                             text = point.object_name + ' ' + text;
                        }
                        marker.bindPopup(text);
+
+                       // Is there a path?
+                       if ("moving_path" in point)
+                       {
+                            var polyline_path = [[point.latitude, point.longitude]];
+                            var polyline_opts = {color:'red'};
+                            // Create a line...
+                            $.each( point.moving_path, function( n, move_point ) {
+                                polyline_path.push([move_point[1], move_point[2]]);
+                            });
+                            var pline = new L.Polyline(polyline_path , polyline_opts);
+                            pline.addTo(mapping_map);
+                       }
+
                     });
 
 
