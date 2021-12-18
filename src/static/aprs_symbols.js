@@ -68,5 +68,21 @@ function fetch_symbols(image_path, table_to_update, call_on_complete)
     full_table_img.src = image_path;
 }
 
+function aprs_symbol_fetch(a, b)
+{
+    //
+    // Return a IMG object of the given icon
+    //
+    let table = aprs_icon_0_images;
+    if (a === '/')
+    {
+        table = aprs_icon_1_images;
+    }
 
+    if (b in table)
+    {
+        return table[b];
+    }
+    return null;
+}
 

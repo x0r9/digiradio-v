@@ -12,6 +12,8 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
+    <script src="static/aprs_symbols.js"></script>
+
     <script>
         function mapping_onload()
         {
@@ -33,7 +35,27 @@
             // Creating a custom icon
             customIcon = L.icon(iconOptions);
 
+            // Load up the symbols
+            aprs_symobols_init(function()
+            {
+                console.log("loaded symbols");
+            });
+
+
+
             load_points();
+        }
+
+        function create_aprs_icon(a,b)
+        {
+            let iconOptions = {iconSize: [32, 32],  iconUrl: 'static/basic_symbol.png'}
+            let img_obj = aprs_symbol_fetch(a,b);
+            if(img_obj != null)
+            {
+                iconOptions['iconUrl'] = img_obj.src;
+            }
+
+            return L.icon(iconOptions);
         }
 
         function load_points()
@@ -41,7 +63,7 @@
             $.getJSON( "last-points/360000", function( data ) {
                 $.each( data.points, function( n, point ) {
                        var marker = L.marker([point.latitude, point.longitude],
-                            {title: point.from, icon:customIcon, clickable: true}).addTo(mapping_map);
+                            {title: point.from, icon:create_aprs_icon(point.symbol_table, point.symbol), clickable: true}).addTo(mapping_map);
                        var text = 'from :'+point.from;
                        if ("object_name" in point)
                        {
