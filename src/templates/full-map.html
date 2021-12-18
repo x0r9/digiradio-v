@@ -72,11 +72,11 @@
 
              $.each( data.points, function( n, point ) {
                     var marker = L.marker([point.latitude, point.longitude],
-                        {title: point.from, icon:create_aprs_icon(point.symbol_table, point.symbol), clickable: true}).addTo(mapping_map);
+                        {title: point.from, icon:create_aprs_icon(point.symbol[0], point.symbol[1]), clickable: true}).addTo(mapping_map);
                     var text = 'from :'+point.from;
-                    if ("object_name" in point)
+                    if (n != point.from)
                     {
-                        text = point.object_name + ' ' + text;
+                        text = n + ' ' + text;
                     }
                     marker.bindPopup(text);
 

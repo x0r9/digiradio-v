@@ -9,6 +9,46 @@ import aprslib
 
 file_path = "file-dump.txt"
 
+def aprs_object_name(par):
+    """
+    Return global name for the aprs object
+    """
+    if "object_name" in par:
+        return par["object_name"].strip()
+
+    return par["from"]
+
+def process_raw_frame(frame):
+    try:
+        aprs_frame = aprs.parse_frame(frame)
+        par = aprslib.parse(str(aprs_frame))
+    except (aprslib.exceptions.ParseError, aprslib.exceptions.UnknownFormat) as e:
+        return
+    except Exception as e:
+        return
+
+    return par
+
+def is_a_point(par):
+    # is it a point?
+    return "latitude" in par and "longitude" in par
+
+def get_point(par):
+    """
+    Return lat, lon of point
+    """
+    return [par.get("latitude", None), par.get("longitude", None)]
+
+
+def points_match(par_before, par_after):
+    """
+    Do points match?
+    """
+
+    return (par_before.get("latitude", None) == par_after.get("latitude", None)
+           and par_before.get("longitude", None) == par_after.get("longitude", None) )
+
+
 def get_last_points(time_window_sec):
     """
     Get a list of the last heard station points
@@ -22,18 +62,15 @@ def get_last_points(time_window_sec):
         if ts < ts_after:
             return # too old
 
-        try:
-            aprs_frame = aprs.parse_frame(frame)
-            par = aprslib.parse(str(aprs_frame))
-        except (aprslib.exceptions.ParseError, aprslib.exceptions.UnknownFormat) as e:
-            return
-        except Exception as e:
+        par = process_raw_frame(frame)
+        if par is None:
             return
 
         # is it a point?
-        curr_lat_lon = [par.get("latitude", None), par.get("longitude", None)]
-        if None in curr_lat_lon:
+        if not is_a_point(par):
             return
+
+        curr_lat_lon = get_point(par)
 
         # Determine the object by source or object name...
         obj_name = par.get("from")

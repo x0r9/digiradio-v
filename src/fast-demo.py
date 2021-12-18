@@ -8,9 +8,14 @@ import json
 
 #Local modules
 import aprs_data
+import dr5_aprs
+import time
+
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+rc = dr5_aprs.RedisConnector()
 
 templates = Jinja2Templates(directory="templates")
 
@@ -26,9 +31,15 @@ config = get_config()
 async def read_item(request: Request):
     return templates.TemplateResponse("symbol-test.html", {"request": request, "id": id})
 
-@app.get("/last-points/{window_secs}")
+@app.get("/last-points-file/{window_secs}")
 async def last_points(request: Request, window_secs: int):
     return {"points":aprs_data.get_last_points(window_secs)}
+
+@app.get("/last-points/{window_secs}")
+async def last_points(request: Request, window_secs: int):
+    n = time.time()
+    n -= window_secs
+    return {"points":rc.get_last_points(n)}
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
