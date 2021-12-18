@@ -27,23 +27,22 @@
                 accessToken: '{{config.map.access_token}}'
             }).addTo(mapping_map);
 
-            // Icon options
-            var iconOptions = {
-                iconUrl: 'static/basic_symbol.png',
-                iconSize: [16, 16]
-            }
-            // Creating a custom icon
-            customIcon = L.icon(iconOptions);
+
 
             // Load up the symbols
-            aprs_symobols_init(function()
-            {
-                console.log("loaded symbols");
+            let symbol_promise = new Promise((resolve, reject) =>{
+                aprs_symobols_init(resolve);
             });
 
 
+            let points_promise = new Promise((resolve, reject) =>{
+                load_points(resolve);
+            });
 
-            load_points();
+            Promise.all([points_promise, symbol_promise]).then((values) => {
+                console.log(values);
+                plot_points(values[0]);
+            });
         }
 
         function create_aprs_icon(a,b)
@@ -58,37 +57,43 @@
             return L.icon(iconOptions);
         }
 
-        function load_points()
+        function load_points(done_callback)
         {
             $.getJSON( "last-points/360000", function( data ) {
-                $.each( data.points, function( n, point ) {
-                       var marker = L.marker([point.latitude, point.longitude],
-                            {title: point.from, icon:create_aprs_icon(point.symbol_table, point.symbol), clickable: true}).addTo(mapping_map);
-                       var text = 'from :'+point.from;
-                       if ("object_name" in point)
-                       {
-                            text = point.object_name + ' ' + text;
-                       }
-                       marker.bindPopup(text);
-
-                       // Is there a path?
-                       if ("moving_path" in point)
-                       {
-                            var polyline_path = [[point.latitude, point.longitude]];
-                            var polyline_opts = {color:'red'};
-                            // Create a line...
-                            $.each( point.moving_path, function( n, move_point ) {
-                                polyline_path.push([move_point[1], move_point[2]]);
-                            });
-                            var pline = new L.Polyline(polyline_path , polyline_opts);
-                            pline.addTo(mapping_map);
-                       }
-
-                    });
+                done_callback(data);
+                });
 
 
-            });
+        }
 
+        function plot_points(data)
+        {
+            // data has been fetched, lets draw them
+
+             $.each( data.points, function( n, point ) {
+                    var marker = L.marker([point.latitude, point.longitude],
+                        {title: point.from, icon:create_aprs_icon(point.symbol_table, point.symbol), clickable: true}).addTo(mapping_map);
+                    var text = 'from :'+point.from;
+                    if ("object_name" in point)
+                    {
+                        text = point.object_name + ' ' + text;
+                    }
+                    marker.bindPopup(text);
+
+                    // Is there a path?
+                    if ("moving_path" in point)
+                    {
+                        var polyline_path = [[point.latitude, point.longitude]];
+                        var polyline_opts = {color:'red'};
+                        // Create a line...
+                        $.each( point.moving_path, function( n, move_point ) {
+                            polyline_path.push([move_point[1], move_point[2]]);
+                        });
+                        var pline = new L.Polyline(polyline_path , polyline_opts);
+                        pline.addTo(mapping_map);
+                    }
+
+                });
         }
 
 

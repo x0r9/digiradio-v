@@ -74,7 +74,7 @@ function aprs_symbol_fetch(a, b)
     // Return a IMG object of the given icon
     //
     let table = aprs_icon_0_images;
-    if (a === '/')
+    if (a === '\\')
     {
         table = aprs_icon_1_images;
     }
