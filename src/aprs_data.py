@@ -55,6 +55,12 @@ def get_last_points(time_window_sec):
             if old_path is not None:
                 par["moving_path"] = old_path
 
+            # update the last heard..
+            last_heard = prev_frame.get("last_heard", None)
+            if last_heard is None:
+                par["last_heard"] = ts
+            elif last_heard < ts:
+                par["last_heard"] = ts
 
         stations[obj_name] = par
 

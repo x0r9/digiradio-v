@@ -22,9 +22,9 @@ def get_config(config_path="config.json"):
 
 config = get_config()
 
-@app.get("/items/{id}", response_class=HTMLResponse)
-async def read_item(request: Request, id: str):
-    return templates.TemplateResponse("item.html", {"request": request, "id": id})
+@app.get("/symbol-test", response_class=HTMLResponse)
+async def read_item(request: Request):
+    return templates.TemplateResponse("symbol-test.html", {"request": request, "id": id})
 
 @app.get("/last-points/{window_secs}")
 async def last_points(request: Request, window_secs: int):

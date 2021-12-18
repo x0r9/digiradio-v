@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Symbol Test</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="static/aprs_symbols.js"></script>
+    <script>
+        function on_load()
+        {
+        console.log("on_load()")
+            aprs_symobols_init(function()
+            {
+                console.log("loaded");
+                let main_dom = $('#main_symbols');
+                let alt_dom = $('#alt_symbols');
+                plot_symbols(aprs_icon_0_images, main_dom);
+                plot_symbols(aprs_icon_1_images, alt_dom);
+            });
+        }
+
+        function plot_symbols(list, domobj)
+        {
+            $.each(list, function(n, img){
+                console.log("test - "+n + " ++ "+img);
+
+                let d = $('<div></div>')
+                let s = $('<span></span>')
+                s.html(n);
+                d.append(s);
+                d.append(img);
+                domobj.append(d);
+
+            });
+        }
+    </script>
+</head>
+<body onload="on_load();">
+<h2>Main</h2>
+<div id="main_symbols"></div>
+<h2>Alt</h2>
+<div id="alt_symbols"></div>
+</body>
+</html>
