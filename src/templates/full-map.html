@@ -61,7 +61,7 @@
 
         function load_points(done_callback)
         {
-            $.getJSON( "last-points/360000", function( data ) {
+            $.getJSON( "last-points/36000", function( data ) {
                 done_callback(data);
                 });
 
@@ -90,12 +90,12 @@
                     marker.bindPopup(text);
 
                     // Is there a path?
-                    if ("moving_path" in point)
+                    if (n in data.moves)
                     {
                         let polyline_path = [[point.latitude, point.longitude]];
                         let polyline_opts = {color:'red'};
                         // Create a line...
-                        $.each( point.moving_path, function( n, move_point ) {
+                        $.each( data.moves[n], function( n, move_point ) {
                             polyline_path.push([move_point[1], move_point[2]]);
                         });
                         let pline = new L.Polyline(polyline_path , polyline_opts);
