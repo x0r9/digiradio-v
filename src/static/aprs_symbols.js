@@ -11,6 +11,9 @@ var aprs_icons_y_count = 6;
 var aprs_char_table = ['!"#$5&\'()*+,-./0', '123456789:;<=>?@', 'ABCDEFGHIJKLMNOP', 'QRSTUVWXYZ[\\]^_`', 'abcdefghijklmnop', 'qrstuvwxyz{|}~  '];
 
 
+var aprs_table_0_selector = "/";
+var aprs_table_1_selector = "\\";
+
 var aprs_icon_0_images = {};
 var aprs_icon_1_images = {};
 var aprs_icon_loader_counter = 0;
@@ -74,7 +77,7 @@ function aprs_symbol_fetch(a, b)
     // Return a IMG object of the given icon
     //
     let table = aprs_icon_0_images;
-    if (a === '\\')
+    if (a === aprs_table_1_selector)
     {
         table = aprs_icon_1_images;
     }

@@ -15,6 +15,10 @@
     <script src="static/aprs_symbols.js"></script>
 
     <script>
+        var qth_latlon = {{config.map.qth_latlon | tojson }};
+        var qth_symbol = {{config.map.qth_symbol | tojson }};
+        var qth_name = {{config.map.qth_name|tojson}};
+
         function mapping_onload()
         {
             // load up the map...
@@ -26,8 +30,6 @@
                 id: '{{config.map.id}}',
                 accessToken: '{{config.map.access_token}}'
             }).addTo(mapping_map);
-
-
 
             // Load up the symbols
             let symbol_promise = new Promise((resolve, reject) =>{
@@ -70,10 +72,17 @@
         {
             // data has been fetched, lets draw them
 
+            // qth
+            let marker = L.marker(qth_latlon,
+                        {title: qth_name, icon:create_aprs_icon(qth_symbol[0], qth_symbol[1]), clickable: true}).addTo(mapping_map);
+            let text = 'QTH :'+qth_name;
+            marker.bindPopup(text);
+
+            // data points
              $.each( data.points, function( n, point ) {
-                    var marker = L.marker([point.latitude, point.longitude],
+                    let marker = L.marker([point.latitude, point.longitude],
                         {title: point.from, icon:create_aprs_icon(point.symbol[0], point.symbol[1]), clickable: true}).addTo(mapping_map);
-                    var text = 'from :'+point.from;
+                    let text = 'from :'+point.from;
                     if (n != point.from)
                     {
                         text = n + ' ' + text;
@@ -83,17 +92,18 @@
                     // Is there a path?
                     if ("moving_path" in point)
                     {
-                        var polyline_path = [[point.latitude, point.longitude]];
-                        var polyline_opts = {color:'red'};
+                        let polyline_path = [[point.latitude, point.longitude]];
+                        let polyline_opts = {color:'red'};
                         // Create a line...
                         $.each( point.moving_path, function( n, move_point ) {
                             polyline_path.push([move_point[1], move_point[2]]);
                         });
-                        var pline = new L.Polyline(polyline_path , polyline_opts);
+                        let pline = new L.Polyline(polyline_path , polyline_opts);
                         pline.addTo(mapping_map);
                     }
 
                 });
+
         }
 
 

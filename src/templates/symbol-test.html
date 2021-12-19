@@ -8,21 +8,70 @@
     <script>
         function on_load()
         {
-        console.log("on_load()")
-            aprs_symobols_init(function()
+            console.log("on_load()")
+                aprs_symobols_init(function()
+                {
+                    //console.log("loaded");
+                    let main_dom = $('#main_symbols');
+                    let alt_dom = $('#alt_symbols');
+                    plot_symbols(aprs_icon_0_images, main_dom);
+                    plot_symbols(aprs_icon_1_images, alt_dom);
+                });
+
+            let ts = $("#text_search")
+            console.log(ts);
+            ts_c_func = function(){
+            console.log("change");
+                let t = $("#text_search").val();
+                $("#text-output").html(t);
+                on_search_symbol(t);
+            };
+            ts.on("input", ts_c_func);
+        }
+
+        function on_search_symbol(text)
+        {
+            // Search for symbol
+            let to = $("#text-output");
+            let im = $("#text-image");
+            if (text.length != 2)
             {
-                console.log("loaded");
-                let main_dom = $('#main_symbols');
-                let alt_dom = $('#alt_symbols');
-                plot_symbols(aprs_icon_0_images, main_dom);
-                plot_symbols(aprs_icon_1_images, alt_dom);
-            });
+                to.html("please type two chars");
+                im.attr('src', "");
+            }
+            else if (text[0] == aprs_table_0_selector || text[0] == aprs_table_1_selector)
+            {
+                // search for it
+                let table = aprs_icon_0_images;
+                if(text[0] == aprs_table_1_selector)
+                {
+                    table = aprs_icon_1_images;
+                }
+
+                if (text[1] in table)
+                {
+                    // its there
+                     to.html("located:");
+                     let img_src = table[text[1]].src;
+                    im.attr('src', img_src);
+                }
+                else
+                {
+                    to.html("unrecognised second char");
+                    im.attr('src', "");
+                }
+            }
+            else
+            {
+                to.html("unsupported table");
+                im.attr('src', "");
+            }
         }
 
         function plot_symbols(list, domobj)
         {
             $.each(list, function(n, img){
-                console.log("test - "+n + " ++ "+img);
+                //console.log("test - "+n + " ++ "+img);
 
                 let d = $('<div></div>')
                 let s = $('<span></span>')
@@ -33,9 +82,19 @@
 
             });
         }
+
+
+
     </script>
 </head>
 <body onload="on_load();">
+<h2>Search</h2>
+<form><input id="text_search" type="text" value="Field 1"> </form>
+<span id="text-output"></span>
+<img id="text-image"/>
+<script>
+
+</script>
 <h2>Main</h2>
 <div id="main_symbols"></div>
 <h2>Alt</h2>
