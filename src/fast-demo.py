@@ -41,6 +41,12 @@ async def last_points(request: Request, window_secs: int):
     n -= window_secs
     return {"points":rc.get_last_points(n)}
 
+@app.get("/last-moves/{window_secs}")
+async def last_points(request: Request, window_secs: int):
+    n = time.time()
+    n -= window_secs
+    return {"moves":rc.get_last_moves(n)}
+
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse("full-map.html", {"request": request, "config":config})

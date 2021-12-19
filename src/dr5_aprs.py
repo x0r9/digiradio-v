@@ -64,9 +64,31 @@ class RedisConnector(object):
 
         else:
             print("object already there")
+            # are we moving?
+            natpar_prev = redis_to_native(hpar_prev)
+            if not aprs_data.points_match(natpar_prev, par):
+                # moving...
+                print("object has moved")
+                self.update_move(object_name, ts, [par["latitude"], par["longitude"]])
+            else:
+                print("object stationary")
+
             self.r.hmset(point_key, hpar_curr)
 
         return hpar_curr
+
+    def update_move(self, object_name, ts, path_loc):
+        """
+        Update the data for where to move to
+        """
+        print(f"Object moved {object_name}")
+        move_key = "move_" + object_name
+        tdump = json.dumps([ts, path_loc[0], path_loc[1]])
+        n = self.r.lpush(move_key, tdump)
+        if n > 100:
+            # pop
+            self.r.rpop(move_key)
+
 
     def get_last_points(self, time_after):
         """
@@ -82,6 +104,24 @@ class RedisConnector(object):
 
             if npar["last_heard"] > time_after:
                 result[key[6:]] = npar
+        return result
+
+    def get_last_moves(self, time_after):
+        """
+        Return list of movements after this time...
+        """
+        key_points = self.r.keys("move_*")
+        print(f" time_after {time_after}")
+        result = {}
+        for key in key_points:
+            data = self.r.lrange(key, 0, -1)
+            print(f"{key} - {len(data)}")
+            ndata = [json.loads(a.decode("utf-8")) for a in data]
+            print(f"{key} + {len(ndata)}, {ndata[0]}")
+            ndata = list([x for x in ndata if x[0] > time_after])
+            print(f"{key} ? {len(ndata)}")
+            if len(ndata) > 0:
+                result[key[5:]] = ndata
         return result
 
 """

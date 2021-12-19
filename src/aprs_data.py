@@ -39,6 +39,14 @@ def get_point(par):
     """
     return [par.get("latitude", None), par.get("longitude", None)]
 
+def points_match_latlon(par_before, par_after):
+    """
+        Do points match?
+        """
+
+    return (par_before[0] == par_after[0]
+            and par_before[1] == par_after[1])
+
 
 def points_match(par_before, par_after):
     """
