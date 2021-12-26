@@ -7,6 +7,7 @@ from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
 import redis
 import asyncio
+import time
 
 
 app = FastAPI()
@@ -94,14 +95,33 @@ async def websocket_redis_endpoint(websocket: WebSocket):
     await websocket.accept()
     r = redis.Redis(host="localhost", port=6379, db=0)
     p = r.pubsub()
-    pub_topic = "pubsub-test"
+    pub_topic = "ps_livepoints"
     p.subscribe(pub_topic)
+    ping_interval = 5
+    next_ping = time.time()+ping_interval
+    ping_count = 0
+    first_message = True
     while True:
         data = p.get_message()
+        ts = time.time()
+
+        if ts > next_ping:
+            await websocket.send_text('{"dtype":"ping", "data": {"ts": {'+str(ts)+', "count":'+str(ping_count)+'}}}')
+            ping_count += 1
+            next_ping = time.time() + ping_interval
         if data is None:
             await asyncio.sleep(0.2)
             continue
-        await websocket.send_text(f"Message text was: {data}")
+        elif first_message:
+            # First message is subscribe, do not send to web client...
+            first_message = False
+        else:
+            try:
+                json_data = data["data"].decode("ascii")
+                await websocket.send_text(f"{json_data}")
+            except:
+                pass
+
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

@@ -41,6 +41,7 @@ class RedisConnector(object):
     """
     def __init__(self, redis_host="127.0.0.1", redis_port=6379, redis_password=None):
         self.r = redis.Redis(host=redis_host, port=redis_port, password=redis_password)
+        self.pubsub_key = "ps_livepoints"
 
 
     def new_point(self, ts, par):
@@ -60,20 +61,29 @@ class RedisConnector(object):
         if len(hpar_prev) == 0: # is empty = None
             # Insert a new one?
             print("new instert", hpar_curr)
+
+            # insert new point into cache
             self.r.hmset(point_key, hpar_curr)
+            # send a live feed of the update too
+            self.r.publish(self.pubsub_key, json.dumps({"dtype": "new_point", "data": {object_name: hpar_curr}}))
 
         else:
             print("object already there")
             # are we moving?
             natpar_prev = redis_to_native(hpar_prev)
-            if not aprs_data.points_match(natpar_prev, par):
+            is_moving = not aprs_data.points_match(natpar_prev, par)
+            update_name = "ping_point" # Point isn't moving
+            if is_moving:
                 # moving...
                 print("object has moved")
+                update_name = "move_point" # Point is moving
                 self.update_move(object_name, ts, [par["latitude"], par["longitude"]])
             else:
                 print("object stationary")
 
+            # update new point into cache
             self.r.hmset(point_key, hpar_curr)
+            self.r.publish(self.pubsub_key, json.dumps({"dtype": update_name, "data": {object_name: hpar_curr}}))
 
         return hpar_curr
 
