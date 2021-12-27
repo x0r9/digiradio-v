@@ -13,104 +13,28 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
     <script src="static/aprs_symbols.js"></script>
-
+    <script src="static/full_map.js"></script>
     <script>
+
         var qth_latlon = {{config.map.qth_latlon | tojson }};
         var qth_symbol = {{config.map.qth_symbol | tojson }};
-        var qth_name = {{config.map.qth_name|tojson}};
+        var qth_name = {{config.map.qth_name | tojson}};
+        var map_center_start = {{config.map.center_start}};
+        var map_center_zoom =  {{config.map.zoom_start}};
 
-        function mapping_onload()
+        var map_tile_url = '{{config.map.url}}';
+        var map_attribution = '{{config.map.attribution|safe}}';
+        var map_tile_id = '{{config.map.id}}';
+        var map_tile_access_token = '{{config.map.access_token}}';
+
+        function body_onload()
         {
-            // load up the map...
-             mapping_map = L.map('mapid').setView({{config.map.center_start}}, {{config.map.zoom_start}});
-
-             L.tileLayer('{{config.map.url}}', {
-                attribution: '{{config.map.attribution|safe}}',
-                maxZoom: 18,
-                id: '{{config.map.id}}',
-                accessToken: '{{config.map.access_token}}'
-            }).addTo(mapping_map);
-
-            // Load up the symbols
-            let symbol_promise = new Promise((resolve, reject) =>{
-                aprs_symobols_init(resolve);
-            });
-
-
-            let points_promise = new Promise((resolve, reject) =>{
-                load_points(resolve);
-            });
-
-            Promise.all([points_promise, symbol_promise]).then((values) => {
-                console.log(values);
-                plot_points(values[0]);
-            });
-        }
-
-        function create_aprs_icon(a,b)
-        {
-            let iconOptions = {iconSize: [32, 32],  iconUrl: 'static/basic_symbol.png'}
-            let img_obj = aprs_symbol_fetch(a,b);
-            if(img_obj != null)
-            {
-                iconOptions['iconUrl'] = img_obj.src;
-            }
-
-            return L.icon(iconOptions);
-        }
-
-        function load_points(done_callback)
-        {
-            $.getJSON( "last-points/36000", function( data ) {
-                done_callback(data);
-                });
-
-
-        }
-
-        function plot_points(data)
-        {
-            // data has been fetched, lets draw them
-
-            // qth
-            let marker = L.marker(qth_latlon,
-                        {title: qth_name, icon:create_aprs_icon(qth_symbol[0], qth_symbol[1]), clickable: true}).addTo(mapping_map);
-            let text = 'QTH :'+qth_name;
-            marker.bindPopup(text);
-
-            // data points
-             $.each( data.points, function( n, point ) {
-                    let marker = L.marker([point.latitude, point.longitude],
-                        {title: point.from, icon:create_aprs_icon(point.symbol[0], point.symbol[1]), clickable: true}).addTo(mapping_map);
-                    let text = 'from :'+point.from;
-                    if (n != point.from)
-                    {
-                        text = n + ' ' + text;
-                    }
-                    marker.bindPopup(text);
-
-                    // Is there a path?
-                    if (n in data.moves)
-                    {
-                        let polyline_path = [[point.latitude, point.longitude]];
-                        let polyline_opts = {color:'red'};
-                        // Create a line...
-                        $.each( data.moves[n], function( n, move_point ) {
-                            polyline_path.push([move_point[1], move_point[2]]);
-                        });
-                        let pline = new L.Polyline(polyline_path , polyline_opts);
-                        pline.addTo(mapping_map);
-                    }
-
-                });
-
-        }
-
-
+            mapping_onload();
+         }
     </script>
 
     </head>
-    <body onload="mapping_onload();" style="margin:0px;">
+    <body onload="body_onload();" style="margin:0px;">
     <div id="mapid" style="padding:0px; width:calc(100vw); height:calc(100vh); background-color: #FBD603;"></div>
     </body>
 </html>
