@@ -1,5 +1,6 @@
 
 var markers = {};
+var polylines = {};
 
 function mapping_onload()
 {
@@ -71,6 +72,12 @@ function create_marker( name, point)
     return marker;
 }
 
+function create_movement_polyline(path)
+{
+    let polyline_opts = {color:'red'};
+    return new L.Polyline(path , polyline_opts);
+}
+
 function plot_points(data)
 {
     // data has been fetched, lets draw them
@@ -89,13 +96,13 @@ function plot_points(data)
             if (n in data.moves)
             {
                 let polyline_path = [[point.latitude, point.longitude]];
-                let polyline_opts = {color:'red'};
                 // Create a line...
                 $.each( data.moves[n], function( n, move_point ) {
                     polyline_path.push([move_point[1], move_point[2]]);
                 });
-                let pline = new L.Polyline(polyline_path , polyline_opts);
+                let pline = create_movement_polyline(polyline_path);
                 pline.addTo(mapping_map);
+                polylines[n] = pline;
             }
 
             // add into markers
@@ -144,6 +151,15 @@ function ws_on_msg(event)
         });
 
     }
+    else if (json_data.dtype == "move_point")
+    {
+        // received that a point has moved
+        $.each( json_data.data, function( n, point ) {
+            console.log("updating: "+n);
+            update_move_line(n, point);
+            update_marker(n, point);
+        });
+    }
     else
     {
         console.log("unkown dtype: "+json_data.dtype);
@@ -178,11 +194,13 @@ function update_marker(marker_name, marker_data)
         markers[marker_name] = marker;
     }
 
+    // update the position
+    var new_ll = new L.LatLng(marker_data.latitude, marker_data.longitude);
+    marker.setLatLng(new_ll);
+
     // Now the marker is there... Animate the thing
     let new_icon = create_aprs_icon(marker_data.symbol[0], marker_data.symbol[1], true);
     let reset_icon = create_aprs_icon(marker_data.symbol[0], marker_data.symbol[1], false);
-    //let new_icon = create_aprs_icon(marker_data.symbol[0], 't', true);
-    //let reset_icon = create_aprs_icon(marker_data.symbol[0], 't', false);
 
     marker.setIcon(new_icon);
     console.log("animate - "+marker_name);
@@ -191,5 +209,45 @@ function update_marker(marker_name, marker_data)
         console.log("no-animate - "+marker_name);
     }, 4000);
 
+
+}
+
+function update_move_line(marker_name, marker_data)
+{
+    // Just update the movement path :: marker is done seperately in update_marker(...)
+
+    // get old position from old marker
+    let marker = null;
+    if(marker_name in markers)
+    {
+        marker = markers[marker_name];
+    }
+    else
+    {
+        // No previous point..
+        return;
+    }
+
+    var prev_ll = marker.getLatLng();
+
+    //polylines
+    let polyline = null;
+    if(marker_name in polylines)
+    {
+        polyline = polylines[marker_name];
+    }
+    else
+    {
+        // create one
+        polyline = create_movement_polyline([]);
+        polyline.addTo(mapping_map);
+        polylines[marker_name] = polyline;
+        polyline.addLatLng(prev_ll);
+    }
+
+
+    // push in new position
+    var new_ll = new L.LatLng(marker_data.latitude, marker_data.longitude);
+    polyline.addLatLng(new_ll);
 
 }
