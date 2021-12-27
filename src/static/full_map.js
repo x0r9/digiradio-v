@@ -1,4 +1,5 @@
 
+var markers = {};
 
 function mapping_onload()
 {
@@ -55,6 +56,21 @@ function load_points(done_callback)
 
 }
 
+function create_marker( name, point)
+{
+    let marker = L.marker([point.latitude, point.longitude],
+                    {title: name,
+                    icon:create_aprs_icon(point.symbol[0], point.symbol[1], false),
+                    clickable: true});
+    let text = 'from :'+point.from;
+    if (name != point.from)
+    {
+        text = name + ' ' + text;
+    }
+    marker.bindPopup(text);
+    return marker;
+}
+
 function plot_points(data)
 {
     // data has been fetched, lets draw them
@@ -64,17 +80,10 @@ function plot_points(data)
                 {title: qth_name, icon:create_aprs_icon(qth_symbol[0], qth_symbol[1], false), clickable: true}).addTo(mapping_map);
     let text = 'QTH :'+qth_name;
     marker_qth.bindPopup(text);
-    var markers = {};
     // data points
      $.each( data.points, function( n, point ) {
-            let marker = L.marker([point.latitude, point.longitude],
-                {title: point.from, icon:create_aprs_icon(point.symbol[0], point.symbol[1], false), clickable: true}).addTo(mapping_map);
-            let text = 'from :'+point.from;
-            if (n != point.from)
-            {
-                text = n + ' ' + text;
-            }
-            marker.bindPopup(text);
+            let marker = create_marker(n, point);
+            marker.addTo(mapping_map);
 
             // Is there a path?
             if (n in data.moves)
@@ -121,6 +130,15 @@ function ws_on_msg(event)
         console.log("ping!!! "+raw_data);
         ping_qth();
     }
+    else if (json_data.dtype == "ping_point")
+    {
+        // Recieved a new  point, animate that?
+        $.each( json_data.data, function( n, point ) {
+            console.log("updating: "+n);
+            update_marker(n, point);
+        });
+
+    }
     else
     {
         console.log("unkown dtype: "+json_data.dtype);
@@ -138,4 +156,35 @@ function ping_qth()
         marker_qth.setIcon(reset_icon);
         //console.log("no-animate");
     }, 4000);
+}
+
+function update_marker(marker_name, marker_data)
+{
+    var marker = null;
+    if(marker_name in markers)
+    {
+        marker = markers[marker_name];
+    }
+    else
+    {
+        // create a new marker and update the list
+        marker = create_marker(marker_name, marker_data);
+        marker.addTo(mapping_map);
+        markers[marker_name] = marker;
+    }
+
+    // Now the marker is there... Animate the thing
+    let new_icon = create_aprs_icon(marker_data.symbol[0], marker_data.symbol[1], true);
+    let reset_icon = create_aprs_icon(marker_data.symbol[0], marker_data.symbol[1], false);
+    //let new_icon = create_aprs_icon(marker_data.symbol[0], 't', true);
+    //let reset_icon = create_aprs_icon(marker_data.symbol[0], 't', false);
+
+    marker.setIcon(new_icon);
+    console.log("animate - "+marker_name);
+    setTimeout(function() {
+        marker.setIcon(reset_icon);
+        console.log("no-animate - "+marker_name);
+    }, 4000);
+
+
 }
