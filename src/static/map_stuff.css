@@ -1,5 +1,6 @@
 @keyframes fade {
-  from { opacity: 0.5; }
+  from { opacity: 1.0; }
+  to { opacity: 0.3; }
 }
 
 .dot {
@@ -14,4 +15,9 @@
 
 .blinking {
   animation: fade 1s infinite alternate;
+}
+
+
+.map_marker_blink {
+    animation: fade 0.5s 6 alternate;
 }

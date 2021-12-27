@@ -29,13 +29,18 @@ function mapping_onload()
     });
 }
 
-function create_aprs_icon(a,b)
+function create_aprs_icon(a,b, blink)
 {
     let iconOptions = {iconSize: [32, 32],  iconUrl: 'static/basic_symbol.png'}
     let img_obj = aprs_symbol_fetch(a,b);
     if(img_obj != null)
     {
         iconOptions['iconUrl'] = img_obj.src;
+    }
+
+    if(blink)
+    {
+        iconOptions['className'] = "map_marker_blink";
     }
 
     return L.icon(iconOptions);
@@ -55,15 +60,15 @@ function plot_points(data)
     // data has been fetched, lets draw them
 
     // qth
-    let marker = L.marker(qth_latlon,
-                {title: qth_name, icon:create_aprs_icon(qth_symbol[0], qth_symbol[1]), clickable: true}).addTo(mapping_map);
+    marker_qth = L.marker(qth_latlon,
+                {title: qth_name, icon:create_aprs_icon(qth_symbol[0], qth_symbol[1], false), clickable: true}).addTo(mapping_map);
     let text = 'QTH :'+qth_name;
-    marker.bindPopup(text);
-
+    marker_qth.bindPopup(text);
+    var markers = {};
     // data points
      $.each( data.points, function( n, point ) {
             let marker = L.marker([point.latitude, point.longitude],
-                {title: point.from, icon:create_aprs_icon(point.symbol[0], point.symbol[1]), clickable: true}).addTo(mapping_map);
+                {title: point.from, icon:create_aprs_icon(point.symbol[0], point.symbol[1], false), clickable: true}).addTo(mapping_map);
             let text = 'from :'+point.from;
             if (n != point.from)
             {
@@ -83,6 +88,9 @@ function plot_points(data)
                 let pline = new L.Polyline(polyline_path , polyline_opts);
                 pline.addTo(mapping_map);
             }
+
+            // add into markers
+            markers[n] = marker;
 
         });
 
@@ -111,9 +119,23 @@ function ws_on_msg(event)
     if (json_data.dtype == "ping")
     {
         console.log("ping!!! "+raw_data);
+        ping_qth();
     }
     else
     {
         console.log("unkown dtype: "+json_data.dtype);
     }
+}
+
+function ping_qth()
+{
+    let new_icon = create_aprs_icon(qth_symbol[0], qth_symbol[1], true);
+    let reset_icon = create_aprs_icon(qth_symbol[0], qth_symbol[1], false);
+    //console.log("animate");
+    marker_qth.setIcon(new_icon);
+
+    setTimeout(function() {
+        marker_qth.setIcon(reset_icon);
+        //console.log("no-animate");
+    }, 4000);
 }
