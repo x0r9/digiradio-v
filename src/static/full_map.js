@@ -25,6 +25,7 @@ function mapping_onload()
     Promise.all([points_promise, symbol_promise]).then((values) => {
         console.log(values);
         plot_points(values[0]);
+        ws_init();
     });
 }
 
@@ -85,4 +86,34 @@ function plot_points(data)
 
         });
 
+}
+
+function ws_init()
+{
+    // Connect to the Websocket and start listening...
+    var map_ws = new WebSocket(map_ws_url);
+    map_ws.onmessage = ws_on_msg;
+    map_ws.onconnect = ws_on_connect;
+}
+
+function ws_on_connect(event)
+{
+    console.log("ws conencted");
+}
+
+function ws_on_msg(event)
+{
+    // On a message from the websocket
+    console.log("on msg");
+    let raw_data = event.data;
+    console.log(raw_data);
+    let json_data = JSON.parse(raw_data);
+    if (json_data.dtype == "ping")
+    {
+        console.log("ping!!! "+raw_data);
+    }
+    else
+    {
+        console.log("unkown dtype: "+json_data.dtype);
+    }
 }

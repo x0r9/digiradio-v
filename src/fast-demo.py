@@ -45,14 +45,17 @@ async def last_points(request: Request, window_secs: int):
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse("full-map.html", {"request": request, "config":config})
-    return {"message": "Hello World"}
+    template_data = {"request": request,
+                     "config": config,
+                     "ws_url": "ws://localhost:8080/ws-live"}
+    return templates.TemplateResponse("full-map.html", template_data)
 
 ## Websockets...
 @app.websocket("/ws-live")
 async def websocket_redis_endpoint(websocket: WebSocket):
     await websocket.accept()
-    r = redis.Redis(host=config.redis_host, port=config.redis_port, db=0)
+    print("ws connected")
+    r = redis.Redis(host=config["redis"]["host"], port=config["redis"]["port"], db=0)
     p = r.pubsub()
     pub_topic = "ps_livepoints"
     p.subscribe(pub_topic)
@@ -65,7 +68,7 @@ async def websocket_redis_endpoint(websocket: WebSocket):
         ts = time.time()
 
         if ts > next_ping:
-            await websocket.send_text('{"dtype":"ping", "data": {"ts": {'+str(ts)+', "count":'+str(ping_count)+'}}}')
+            await websocket.send_text('{"dtype":"ping", "data": {"ts":'+str(ts)+', "count":'+str(ping_count)+'}}')
             ping_count += 1
             next_ping = time.time() + ping_interval
         if data is None:
