@@ -108,7 +108,12 @@ function plot_points(data)
 function ws_init()
 {
     // Connect to the Websocket and start listening...
-    var map_ws = new WebSocket(map_ws_url);
+    var setting = new URL(map_ws_url);
+    var this_thing = new URL(window.location);
+
+    var new_ws_url = setting.protocol + "//" + this_thing.host + setting.pathname;
+
+    var map_ws = new WebSocket(new_ws_url);
     map_ws.onmessage = ws_on_msg;
     map_ws.onconnect = ws_on_connect;
 }
