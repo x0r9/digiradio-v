@@ -100,6 +100,7 @@ function plot_points(data)
                 $.each( data.moves[n], function( n, move_point ) {
                     polyline_path.push([move_point[1], move_point[2]]);
                 });
+                polyline_path.reverse(); // This is to ensure the entries are chronological, so movements append on the latest point
                 let pline = create_movement_polyline(polyline_path);
                 pline.addTo(mapping_map);
                 polylines[n] = pline;
