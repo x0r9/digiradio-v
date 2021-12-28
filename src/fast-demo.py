@@ -21,7 +21,15 @@ rc = dr5_aprs.RedisConnector()
 
 templates = Jinja2Templates(directory="templates")
 
-def get_config(config_path="config.json"):
+def get_config(config_path=None):
+
+    # If not supplied find it locally or in /etc/...
+    if config_path is None:
+        if os.path.isfile("config.json"):
+            config_path = "config.json"
+        else:
+            config_path = "/etc/digiradio-v/config.json"
+
     if os.path.isfile(config_path):
         with open(config_path, "r") as f:
             return json.loads(f.read())
