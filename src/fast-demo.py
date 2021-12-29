@@ -14,8 +14,7 @@ import dr5_aprs
 import time
 
 
-app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 rc = dr5_aprs.RedisConnector()
 
@@ -36,6 +35,11 @@ def get_config(config_path=None):
     raise IOError("No config file found")
 
 config = get_config()
+
+
+## Start Specifiying the FastAPI app
+app = FastAPI(root_path=config.get("root_path", None))
+app.mount("/static/", StaticFiles(directory="static"), name="static")
 
 @app.get("/symbol-test", response_class=HTMLResponse)
 async def read_item(request: Request):
