@@ -16,7 +16,7 @@ import time
 
 
 
-rc = dr5_aprs.RedisConnector()
+
 
 templates = Jinja2Templates(directory="templates")
 
@@ -35,7 +35,7 @@ def get_config(config_path=None):
     raise IOError("No config file found")
 
 config = get_config()
-
+rc = dr5_aprs.RedisConnector(redis_host=config["redis"]["host"], redis_port=config["redis"]["port"])
 
 ## Start Specifiying the FastAPI app
 app = FastAPI(root_path=config.get("root_path", None))
@@ -45,9 +45,9 @@ app.mount("/static/", StaticFiles(directory="static"), name="static")
 async def read_item(request: Request):
     return templates.TemplateResponse("symbol-test.html", {"request": request, "id": id})
 
-@app.get("/last-points-file/{window_secs}")
-async def last_points(request: Request, window_secs: int):
-    return {"points":aprs_data.get_last_points(window_secs)}
+# @app.get("/last-points-file/{window_secs}")
+# async def last_points(request: Request, window_secs: int):
+#     return {"points":aprs_data.get_last_points(window_secs)}
 
 @app.get("/last-points/{window_secs}")
 async def last_points(request: Request, window_secs: int):
