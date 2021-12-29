@@ -119,7 +119,13 @@ function ws_init()
     var setting = new URL(map_ws_url);
     var this_thing = new URL(window.location);
 
-    var new_ws_url = setting.protocol + "//" + this_thing.host + setting.pathname;
+    var protocol = "wss:";
+    if (this_thing.protocol === "http:")
+    {
+        protocol = "ws:";
+    }
+
+    var new_ws_url = protocol + "//" + this_thing.host + setting.pathname;
 
     var map_ws = new WebSocket(new_ws_url);
     map_ws.onmessage = ws_on_msg;

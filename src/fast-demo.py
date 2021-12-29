@@ -57,9 +57,17 @@ async def last_points(request: Request, window_secs: int):
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
+    ws_url = ""
+    if config.get("root_path", None) is not None:
+        root_path = config["root_path"]
+        if not root_path.startswith("/"):
+            root_path = "/"+root_path
+        if not root_path.endswith("/"):
+            root_path = root_path+"/"
+        ws_url = "ws://hostname-here"+root_path+"ws-live"
     template_data = {"request": request,
                      "config": config,
-                     "ws_url": "ws://localhost:8080/ws-live"}
+                     "ws_url": ws_url}
     return templates.TemplateResponse("full-map.html", template_data)
 
 ## Websockets...
