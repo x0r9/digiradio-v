@@ -15,7 +15,7 @@ async def hello(uri, kclient):
     ping_interval = 10
     next_ping = time.time() + ping_interval
     messages = {"msgs":[]}
-    await websocket.send("connected");
+    await websocket.send('{"dtype":"ping", "data": {"counter": '+str(counter)+'}}')
     def _on_message(msg):
         print("Got Message")
         messages["msgs"].append(msg)
@@ -24,9 +24,10 @@ async def hello(uri, kclient):
         n = time.time()
         if n > next_ping:
             print("Send ping")
+            counter += 1
             await websocket.send('{"dtype":"ping", "data": {"counter": '+str(counter)+'}}')
             next_ping = time.time() + ping_interval
-            counter += 1
+
         try:
             kclient.read(callback=_on_message)
 
