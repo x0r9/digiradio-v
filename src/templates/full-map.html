@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+    <head>
+
+    <meta http-equiv="Content-Security-Policy" content="default-src * gap: data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:;">
+<!--    <meta name="viewport" content="width=1280, initial-scale=1, user-scalable=0">-->
+    <link rel="icon" type="image/png" sizes="96x96" href="static/favicon.png">
+    <link rel="stylesheet" href="static/map_stuff.css" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+          integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+          crossorigin="" />
+
+
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+            integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+            crossorigin=""></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="static/aprs_symbols.js"></script>
+    <script src="static/full_map.js"></script>
+    <script>
+
+        var qth_latlon = {{config.map.qth_latlon | tojson }};
+        var qth_symbol = {{config.map.qth_symbol | tojson }};
+        var qth_name = {{config.map.qth_name | tojson}};
+        var map_center_start = {{config.map.center_start}};
+        var map_center_zoom =  {{config.map.zoom_start}};
+
+        var map_tile_url = '{{config.map.url}}';
+        var map_attribution = '{{config.map.attribution|safe}}';
+        var map_tile_id = '{{config.map.id}}';
+        var map_tile_access_token = '{{config.map.access_token}}';
+
+        var map_ws_url = '{{ws_url}}';
+
+        function body_onload()
+        {
+            mapping_onload();
+        }
+    </script>
+
+    </head>
+    <body onload="body_onload();" style="margin:0px;">
+    <div id="mapid" style="padding:0px; width:calc(100vw); height:calc(100vh); background-color: #FBD603;"></div>
+    </body>
+</html>
+

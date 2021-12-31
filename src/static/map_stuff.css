@@ -1,0 +1,23 @@
+@keyframes fade {
+  from { opacity: 1.0; }
+  to { opacity: 0.3; }
+}
+
+.dot {
+  height: 65px;
+  width: 65px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  outline-width:10px;
+  outline-style: dotted;
+}
+
+.blinking {
+  animation: fade 1s infinite alternate;
+}
+
+
+.map_marker_blink {
+    animation: fade 0.5s 6 alternate;
+}
