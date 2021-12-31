@@ -12,6 +12,7 @@ import dr5_config
 import aprs_data
 
 streamapi = FastAPI()
+config = dr5_config.config
 
 @streamapi.get("/hello")
 async def stream_hello(request: Request):
@@ -41,7 +42,7 @@ async def push_aprs_ws(websocket: WebSocket, api_key: str):
     await websocket.accept()
 
     ## setup message handler
-    rc = dr5_aprs.RedisConnector()
+    rc = dr5_aprs.RedisConnector(redis_host=config["redis"]["host"], redis_port=config["redis"]["port"])
     def _on_aprs_redis(ts, frame):
         par = aprs_data.process_raw_frame(frame)
         print(f"{type(par)}, {str(par)}")

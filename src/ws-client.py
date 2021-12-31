@@ -50,6 +50,9 @@ if __name__ == "__main__":
     parser.add_argument("-port", type=int, default=8001, help="port of kiss modem")
     args = parser.parse_args()
 
+    if args.ws is not None:
+        ws_url = args.ws
+
     # connect KISS
 
     kclient = kiss.TCPKISS(args.ip, port=args.port)
