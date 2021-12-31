@@ -23,3 +23,8 @@
 `cd src`
 `source  venv/bin/activate`
 `uvicorn fast-demo:app --port 8080  --reload`
+
+## Create + Setup Enviroment
+`python3 -m venv venv`
+`source venv/bin/activate`
+`pip install -r requirements.txt`
