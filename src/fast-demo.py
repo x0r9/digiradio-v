@@ -7,39 +7,28 @@ import redis
 import os
 import json
 import asyncio
+import time
 
 #Local modules
 import aprs_data
 import dr5_aprs
-import time
+import dr5_config
 
 
-
+#other DR5 FastAPI modules
+import dr5_streamapi
 
 
 
 templates = Jinja2Templates(directory="templates")
 
-def get_config(config_path=None):
-
-    # If not supplied find it locally or in /etc/...
-    if config_path is None:
-        if os.path.isfile("config.json"):
-            config_path = "config.json"
-        else:
-            config_path = "/etc/digiradio-v/config.json"
-
-    if os.path.isfile(config_path):
-        with open(config_path, "r") as f:
-            return json.loads(f.read())
-    raise IOError("No config file found")
-
-config = get_config()
+config = dr5_config.config
 rc = dr5_aprs.RedisConnector(redis_host=config["redis"]["host"], redis_port=config["redis"]["port"])
 
 ## Start Specifiying the FastAPI app
 app = FastAPI(root_path=config.get("root_path", None))
 app.mount("/static/", StaticFiles(directory="static"), name="static")
+app.mount("/streamapi/", dr5_streamapi.streamapi, name="streamapi")
 
 @app.get("/symbol-test", response_class=HTMLResponse)
 async def read_item(request: Request):
@@ -57,7 +46,7 @@ async def last_points(request: Request, window_secs: int):
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    ws_url = ""
+    ws_url = "ws://hostname-here/ws-live"
     if config.get("root_path", None) is not None:
         root_path = config["root_path"]
         if not root_path.startswith("/"):
