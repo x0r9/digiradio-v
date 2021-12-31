@@ -149,7 +149,7 @@ function ws_on_msg(event)
         console.log("ping!!! "+raw_data);
         ping_qth();
     }
-    else if (json_data.dtype == "ping_point")
+    else if (json_data.dtype == "ping_point" || json_data.dtype == "new_point")
     {
         // Recieved a new  point, animate that?
         $.each( json_data.data, function( n, point ) {
