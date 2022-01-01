@@ -4,15 +4,32 @@ var polylines = {};
 
 function mapping_onload()
 {
-    // load up the map...
-     mapping_map = L.map('mapid').setView(map_center_start, map_center_zoom);
+     // Create and add mapping layers
+    let base_mapping_layers = {};
+    let layers = [];
+    $.each( map_tiles, function( name, map_config ) {
+        let l = L.tileLayer(map_config.url, map_config.opts );
+        if (name == map_default_layer)
+        {
+            layers.push(l);
+        }
+        base_mapping_layers[name] = l;
+    });
 
-     L.tileLayer(map_tile_url, {
-        attribution: map_attribution,
-        maxZoom: 18,
-        id: map_tile_id,
-        accessToken: map_tile_access_token
-    }).addTo(mapping_map);
+
+    // load up the map...
+     mapping_map = L.map('mapid', {'layers':layers}).setView(map_center_start, map_center_zoom);
+
+
+
+    L.control.layers(base_mapping_layers).addTo(mapping_map);
+
+//     L.tileLayer(map_tile_url, {
+//        attribution: map_attribution,
+//        maxZoom: 18,
+//        id: map_tile_id,
+//        accessToken: map_tile_access_token
+//    }).addTo(mapping_map);
 
     // Load up the symbols
     let symbol_promise = new Promise((resolve, reject) =>{
@@ -29,6 +46,11 @@ function mapping_onload()
         plot_points(values[0]);
         ws_init();
     });
+}
+
+function add_mapping_layers()
+{
+
 }
 
 function create_aprs_icon(a,b, blink)

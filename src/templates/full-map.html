@@ -28,12 +28,11 @@
         var map_center_start = {{config.map.center_start}};
         var map_center_zoom =  {{config.map.zoom_start}};
 
-        var map_tile_url = '{{config.map.url}}';
-        var map_attribution = '{{config.map.attribution|safe}}';
-        var map_tile_id = '{{config.map.id}}';
-        var map_tile_access_token = '{{config.map.access_token}}';
+        var map_default_layer = {{config.map.default_tiles | tojson }};
 
         var map_ws_url = '{{ws_url}}';
+
+        var map_tiles = {{config.map_tiles | tojson}};
 
         function body_onload()
         {

@@ -1,20 +1,46 @@
 {
   "map":
   {
-      "access_token": "api-key-from-mapbox",
-      "url" : "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
-      "attribution": "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-      "id": "mapbox/outdoors-v11",
       "center_start": [51.5008, -0.1245],
       "qth_latlon": [51.4780, 0.0000],
       "qth_symbol": "\\#",
       "qth_name": "YOUR-CALL",
-      "zoom_start":10
+      "zoom_start":10,
+      "default_tiles": "mapbox_online"
 
+  },
+  "map_tiles":
+  {
+      "mapbox_online": {
+        "url": "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}",
+        "opts" : {
+          "attribution": "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+          "id": "mapbox/outdoors-v11",
+          "maxZoom": 12,
+          "accessToken": "api-key-from-mapbox"
+        }
+      },
+      "uk_offline":
+      {
+        "url" : "static/offline-maps/cache-name/{z}/{x}/{y}.png",
+        "opts": {
+          "attribution": "attribution for cache-name",
+          "maxZoom": 12,
+          "minZoom": 8
+        }
+      }
   },
   "redis":
   {
     "host":"localhost",
     "port": 6379
+  },
+  "apikeys":
+  {
+    "super-secret-key":
+    {
+      "station_name": "QTH",
+      "modes": ["aprs"]
+    }
   }
 }
