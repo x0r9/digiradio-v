@@ -32,7 +32,15 @@
       "geo_json":
       {
         "layer_type": "geojson",
-        "url": "static/offline-maps/geojson-world/all_small.json"
+        "url": "static/offline-maps/geojson-world/all_small.json",
+        "opts": {
+          "style": {
+            "fill": true,
+            "color": "#000",
+            "fillColor": "#fff",
+            "fillOpacity": 0.4
+          }
+        }
       }
   },
   "redis":

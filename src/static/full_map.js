@@ -25,6 +25,18 @@ function mapping_onload()
         else if (layer_type == "geojson")
         {
             l = new L.GeoJSON.AJAX(map_config.url);
+            l.options = map_config.opts;
+
+
+//             l = L.GeoJSON(map_config.url, map_config.opts);
+//            l.options.clickable = false;
+//            l.options.style = {stroke: true,
+//            fill: true,
+//            color:"#000",
+//            fillColor: '#fff',
+//            fillOpacity: 1,
+//            backgroundColor:"#f00",
+//            zIndex:-100};
         }
 
         if (l == null)
