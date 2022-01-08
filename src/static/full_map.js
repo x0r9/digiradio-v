@@ -8,7 +8,34 @@ function mapping_onload()
     let base_mapping_layers = {};
     let layers = [];
     $.each( map_tiles, function( name, map_config ) {
-        let l = L.tileLayer(map_config.url, map_config.opts );
+
+        // Default layer_type to tile if not specified
+        let layer_type = "tile";
+        if ( "layer_type" in map_config )
+        {
+            layer_type = map_config.layer_type;
+        }
+
+        // Init layer based on type
+        let l = null;
+        if (layer_type == "tile")
+        {
+            l = L.tileLayer(map_config.url, map_config.opts );
+        }
+        else if (layer_type == "geojson")
+        {
+           // l = new L.GeoJSON.AJAX(map_config.url);
+        }
+
+        if (l == null)
+        {
+            // Skipp if null
+            console.log("Mapping option was null, skipping")
+            return;
+        }
+
+
+        // push/add layer onto based type list
         if (name == map_default_layer)
         {
             layers.push(l);
