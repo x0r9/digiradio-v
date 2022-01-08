@@ -28,6 +28,11 @@
           "maxZoom": 12,
           "minZoom": 8
         }
+      },
+      "geo_json":
+      {
+        "layer_type": "geojson",
+        "url": "static/offline-maps/geojson-world/all_small.json"
       }
   },
   "redis":

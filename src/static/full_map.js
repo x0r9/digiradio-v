@@ -24,7 +24,7 @@ function mapping_onload()
         }
         else if (layer_type == "geojson")
         {
-           // l = new L.GeoJSON.AJAX(map_config.url);
+            l = new L.GeoJSON.AJAX(map_config.url);
         }
 
         if (l == null)
