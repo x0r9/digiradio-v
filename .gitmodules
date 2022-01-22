@@ -1,0 +1,3 @@
+[submodule "src/packages/dr5_kiss"]
+	path = src/packages/dr5_kiss
+	url = https://github.com/x0r9/dr5_kiss.git
