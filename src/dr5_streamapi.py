@@ -44,6 +44,7 @@ async def push_aprs_ws(websocket: WebSocket, api_key: str):
     ## setup message handler
     rc = dr5_aprs.RedisConnector(redis_host=config["redis"]["host"], redis_port=config["redis"]["port"])
     def _on_aprs_redis(ts, frame):
+        rc.push_packet(ts, frame)
         par = aprs_data.process_raw_frame(frame)
         print(f"{type(par)}, {str(par)}")
         if par is None:

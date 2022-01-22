@@ -17,6 +17,7 @@ import dr5_config
 
 #other DR5 FastAPI modules
 import dr5_streamapi
+import aprs_app
 
 
 
@@ -29,6 +30,7 @@ rc = dr5_aprs.RedisConnector(redis_host=config["redis"]["host"], redis_port=conf
 app = FastAPI(root_path=config.get("root_path", None))
 app.mount("/static/", StaticFiles(directory="static"), name="static")
 app.mount("/streamapi/", dr5_streamapi.streamapi, name="streamapi")
+app.mount("/aprs/", aprs_app.aprs_app, name="aprs")
 
 @app.get("/symbol-test", response_class=HTMLResponse)
 async def read_item(request: Request):

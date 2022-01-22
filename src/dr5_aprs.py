@@ -4,7 +4,10 @@ Class to handle inserting, updating the reading data in a redis system
 
 import redis
 import json
+import binascii
 import aprs_data
+import base64
+import binascii
 
 
 def aprs_to_redis(ts, par):
@@ -35,14 +38,39 @@ def read_redis_list(b_list):
         return json.loads(b_list.decode("utf-8"))
 
 
+def bin_to_b64(bindata):
+    return base64.b16decode(j_data["data"]["payload"].upper())
+
+def b64_to_bin(b64_data):
+    return base64.b16decode(b64_data.upper())
+
 class RedisConnector(object):
     """
     Connect to a redis server and handle common tasks
     """
+
     def __init__(self, redis_host="127.0.0.1", redis_port=6379, redis_password=None):
         self.r = redis.Redis(host=redis_host, port=redis_port, password=redis_password)
         self.pubsub_key = "ps_livepoints"
+        self.packets_key = "aprs_packets"
+        self.packets_pubsub = "ps_rawpackets"
 
+    def push_packet(self, ts, raw_packet):
+        """
+        Push a raw packet into a queue
+        """
+        tdump = json.dumps({"ts": ts, "raw_packet": binascii.hexlify(raw_packet).decode('ascii')})
+        n = self.r.lpush(self.packets_key, tdump)
+        if n > 1000:
+            # pop
+            self.r.rpop(self.packets_key)
+
+        self.r.publish(self.packets_pubsub, tdump)
+
+    def get_packets(self):
+        data = self.r.lrange(self.packets_key, 0, -1)
+        ndata = [json.loads(a.decode("utf-8")) for a in data]
+        return ndata
 
     def new_point(self, ts, par):
         """
