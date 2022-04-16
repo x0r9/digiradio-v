@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.8
 COPY src/requirements.txt /opt/digiradio-v/requirements.txt
 RUN pip install -r /opt/digiradio-v/requirements.txt
 COPY src/ /opt/digiradio-v

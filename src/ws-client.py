@@ -4,11 +4,11 @@ from websockets.exceptions import ConnectionClosedError
 import socket
 import binascii
 import asyncio
-from asyncio.exceptions import TimeoutError
+from asyncio.exceptions import TimeoutError as TimeoutErrorAsync
 import kiss
 import argparse
 import time
-
+import logging
 
 ws_url = "ws://127.0.0.1:8080/streamapi/push-aprs/super-secret-key/ws"
 
@@ -28,15 +28,15 @@ async def send_data_loop(kclient, websocket, messages, ping_interval=10):
             next_ping = time.time() + ping_interval
 
         try:
-            rx_frames = kclient.read(readmode=False)
+            rx_frames = await kclient.read_async(readmode=False)
             print(f"rx_frame count: {len(rx_frames)}")
             if len(rx_frames) == 0:
                 # potentially no data RX, return No
                 raise Exception("Wa wa wa wa")
             for frame in rx_frames:
                 _on_message(frame)
-        except socket.timeout as e:
-            print("timeout")
+        except TimeoutErrorAsync as e:
+            print("kiss timeout")
 
         while len(messages["msgs"]) > 0:
             msg = messages["msgs"].pop(0)
@@ -46,14 +46,49 @@ async def send_data_loop(kclient, websocket, messages, ping_interval=10):
 
 
 
-async def hello(uri, kclient):
-    beb_time = 1
+async def temp_read(kclient):
+    while True:
+        try:
+            data = await asyncio.wait_for(kclient.async_reader.read(1024),timeout=2)
+            print(f"data: {data}")
+        except asyncio.exceptions.TimeoutError as e:
+            print ("timeout...")
+            continue
+        
 
+
+async def hello(uri, kclient):
+    
+    # connect?
+    conn_sleep_time = 10
+    connected = False
+    orig_timeout = kclient.timeout
+    for attempt_n in range(10):
+        try:
+            kclient.timeout = 5
+            print("start_async()")
+            await kclient.start_async()
+            print("start_async() done")
+            connected = True
+            break
+        except (ConnectionRefusedError, TimeoutError) as e:    
+            print("could not connect/KISS:", type(e).__name__, e)
+            print(f"waiting for {conn_sleep_time} secs")
+            await asyncio.sleep(conn_sleep_time)
+            continue 
+    
+    if not connected:
+        print("Too many attemps to connect, quitting...")
+        return
+
+    #await temp_read(kclient)
+
+    beb_time = 1
     while True:
         try:
             websocket = await connect(uri)
         except (ConnectionRefusedError, TimeoutError) as e:
-            print("could not connect:", type(e).__name__, e)
+            print("could not connect/ws:", type(e).__name__, e)
             print(f"waiting for {beb_time} secs")
             await asyncio.sleep(beb_time)
             beb_time = beb_time*2
@@ -90,13 +125,16 @@ if __name__ == "__main__":
     parser.add_argument("-port", type=int, default=8001, help="port of kiss modem")
     args = parser.parse_args()
 
+    kiss.LOG_LEVEL = logging.debug
+    logging.basicConfig(level=logging.DEBUG)
+
     if args.ws is not None:
         ws_url = args.ws
 
     # connect KISS
 
-    kclient = kiss.TCPKISS(args.ip, port=args.port)
+    kclient = kiss.TCPAsyncKISS(args.ip, port=args.port)
 
-    kclient.start()
-    kclient.interface.settimeout(10)
+    
+    #kclient.interface.settimeout(10)
     asyncio.run(hello(ws_url, kclient))
