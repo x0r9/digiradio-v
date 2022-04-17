@@ -13,7 +13,7 @@ h11==0.12.0
 httptools==0.3.0
 idna==3.3
 Jinja2==3.0.3
--e git+https://github.com/x0r9/dr5_kiss.git@fc8049798efd595109522e215aa7b9fc8e691518#egg=kiss
+-e git+https://github.com/x0r9/dr5_kiss.git@17337e4c1aae0cf3450d18b5948235a3f3f1cea2#egg=kiss
 MarkupSafe==2.0.1
 pydantic==1.8.2
 pyserial==3.5
