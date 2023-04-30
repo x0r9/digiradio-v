@@ -5,7 +5,7 @@ import socket
 import binascii
 import asyncio
 from asyncio.exceptions import TimeoutError as TimeoutErrorAsync
-import kiss
+import kissasync
 import argparse
 import time
 import logging
@@ -16,7 +16,7 @@ ws_url = "ws://127.0.0.1:8080/streamapi/push-aprs/super-secret-key/ws"
 async def send_data_loop(kclient, websocket, messages, ping_interval=10):
     def _on_message(msg):
         print("Got Message")
-        messages["msgs"].append(msg)
+        messages["msgs"].append( bytes(msg) ) # This used to be a Raw, now converts FRAME obj back to binary...
     next_ping = time.time() + ping_interval
 
     while True:
@@ -28,15 +28,21 @@ async def send_data_loop(kclient, websocket, messages, ping_interval=10):
             next_ping = time.time() + ping_interval
 
         try:
-            rx_frames = await kclient.read_async(readmode=False)
+            # Read the frames... 
+            print("Wait to read kiss")
+            rx_frames = await kclient.read()
+            # rx_frames = await kclient.read_async(readmode=False)
             print(f"rx_frame count: {len(rx_frames)}")
             if len(rx_frames) == 0:
                 # potentially no data RX, return No
-                raise Exception("Wa wa wa wa")
+                print("len, 0 sleep")
+                for x in range(3):
+                    await asyncio.sleep(1)
             for frame in rx_frames:
                 _on_message(frame)
         except TimeoutErrorAsync as e:
-            print("kiss timeout")
+            #print("kiss timeout")
+            pass
 
         while len(messages["msgs"]) > 0:
             msg = messages["msgs"].pop(0)
@@ -125,7 +131,7 @@ if __name__ == "__main__":
     parser.add_argument("-port", type=int, default=8001, help="port of kiss modem")
     args = parser.parse_args()
 
-    kiss.LOG_LEVEL = logging.debug
+    #kiss.LOG_LEVEL = logging.debug
     logging.basicConfig(level=logging.DEBUG)
 
     if args.ws is not None:
@@ -133,7 +139,7 @@ if __name__ == "__main__":
 
     # connect KISS
 
-    kclient = kiss.TCPAsyncKISS(args.ip, port=args.port)
+    kclient = kissasync.TCPAsyncKISS(args.ip, port=args.port)
 
     
     #kclient.interface.settimeout(10)
