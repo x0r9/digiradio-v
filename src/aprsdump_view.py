@@ -10,6 +10,9 @@ import framecap
 import time
 import aprs_data
 import binascii
+import ax253 
+
+AX25Frame = ax253.frame.Frame
 
 def try_convert(bin):
     result = ""
@@ -20,19 +23,68 @@ def try_convert(bin):
             result += "."
     return result
 
-def show_frame(ts, raw_frame):
+def clean_raw(raw):
+    """Remove any start 0x00 to aid parser"""
+    index = 0
+    for n, x in enumerate(raw):
+        if x != 0:
+            index = n
+            break
+            
 
-    ax25 = aprs.functions.parse_frame_ax25(raw_frame)
-    print("ts:", ts, "src:",ax25.source, "dst:",ax25.destination, "path:",ax25.path, "info", ax25.info)
-    x = aprs_data.process_raw_frame(raw_frame)
-    if x is None:
-        print(f"   Unable to parse")
-    else:
-        print(f"   {x['from']}->{x['to']} VIA {x['path']} type:{x['format']}")
-    #print(raw_frame, x)
-    #print(x)
+    result = raw[index:]
+    #print(raw)
+    #print(result)
+    return result
 
+stats_type = {}
 
+def inc_stat(name):
+    stats_type[name] = stats_type.get(name, 0) + 1
+
+def show_frame(ts, raw_frame, filter_info=None):
+
+    #ax25 = aprs.functions.parse_frame_ax25(raw_frame)
+    raw_frame = clean_raw(raw_frame)
+    ax25 = AX25Frame.from_bytes(raw_frame)
+
+    try:
+        x = aprs.InformationField.from_bytes(ax25.info)
+        inc_stat(str(x.data_type))
+    except:
+        x = None
+        inc_stat("datatype-NoParse")
+
+    to_print = filter_info is None or (x is not None and x.data_type == filter_info)
+    info = ax25.info
+
+    if to_print:
+        p = [str(n) for n in ax25.path]
+        print("ts:", ts, "src:",ax25.source, "dst:",ax25.destination, "path:",p, "control", hex(ax25.control.v[0]), "pid", ax25.pid, "info", ax25.info)
+        
+        if x is None:
+            print(f"   Unable to parse")
+        else:
+            print(f"   {x.data_type}")
+
+        if x is not None and x.data_type == aprs.DataType.THIRD_PARTY_TRAFFIC:
+            # reparse the information field?
+            ax25_third = AX25Frame.from_str(ax25.info[1:].decode("ascii"))
+            #print("   ", ax25_third)
+            p_third = [str(n) for n in ax25_third.path]
+            print("   ", "src:",ax25_third.source, "dst:",ax25_third.destination, "path:",p_third, "control", hex(ax25_third.control.v[0]), "pid", ax25_third.pid, "info", ax25_third.info)
+            info = ax25_third.info
+            #data_type = x.data_type
+        # Parse the info packet type...
+        print("    ", info)
+        try:
+            x = aprs.InformationField.from_bytes(info)
+            inc_stat(str(x.data_type))
+        except:
+            x = None
+            inc_stat("datatype-NoParseThirdParty")
+
+        print("datatype:", x)
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("APRSDump Analysis - Read APRS data")
@@ -48,8 +100,12 @@ if __name__ == "__main__":
     while freader_line is not None:
         ts, raw_frame = freader_line
         #print(raw_frame)
-        show_frame(ts, raw_frame)
+        #filter_info=aprs.DataType.THIRD_PARTY_TRAFFIC
+        #filter_info=None
+        show_frame(ts, raw_frame, filter_info=aprs.DataType.THIRD_PARTY_TRAFFIC)
 
         freader_line = freader.read_next()
 
     
+    for key in stats_type:
+        print(f"{key} - {stats_type[key]}")
