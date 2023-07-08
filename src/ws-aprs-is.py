@@ -21,7 +21,16 @@ if __name__ == "__main__":
 
     host = "rotate.aprs.net"
     port = 14580 # this is for filters
-    filter = "r/33.25/-96.5/500"
+    #filter = "r/33.25/-96.5/500"
+
+    ##
+    ## filter rules: http://www.aprs-is.net/javAPRSFilter.aspx
+    ##
+
+    # Stations near home...
+    filter = "r/53.92/-1.39/200"
+    filter = "d/RS0ISS"
+
 
     AIS = aprslib.IS("N0CALL", host=host, port=port)
     AIS.filter = filter

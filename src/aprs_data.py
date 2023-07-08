@@ -7,7 +7,24 @@ import aprs
 import framecap
 import aprslib
 
+import ax253 
+AX25Frame = ax253.frame.Frame
+
 file_path = "file-dump.txt"
+
+def clean_raw(raw):
+    """Remove any start 0x00 to aid parser"""
+    index = 0
+    for n, x in enumerate(raw):
+        if x != 0:
+            index = n
+            break
+            
+
+    result = raw[index:]
+    #print(raw)
+    #print(result)
+    return result
 
 def aprs_object_name(par):
     """
@@ -17,6 +34,80 @@ def aprs_object_name(par):
         return par["object_name"].strip()
 
     return par["from"]
+
+
+def raw_frame(raw_frame):
+    def _inc_stat(name):
+        pass
+
+    #ax25 = aprs.functions.parse_frame_ax25(raw_frame)
+    raw_frame = clean_raw(raw_frame)
+    try:
+        ax25 = AX25Frame.from_bytes(raw_frame)
+    except Exception as e:
+        print(f"Unable to parse X25 due to {e}")
+        _inc_stat("datatype-NoParse-X25")
+        return
+    
+    try:
+        x = aprs.InformationField.from_bytes(ax25.info)
+        _inc_stat(str(x.data_type))
+    except:
+        x = None
+        _inc_stat("datatype-NoParse")
+        return 
+
+
+    result = {}
+    p = [str(n) for n in ax25.path]
+    result["path"] = p
+    result["from"] = ax25.source # This will be updated if it's a third party!
+    result["ax25_source"] = ax25.source
+    result["to"] = ax25.destination # This will be updated if it's a third party!
+    result["ax25_dst"] = ax25.destination
+    result["control"] = hex(ax25.control.v[0])
+    result["payload-type"] = None
+    result["is-third-party"] = False
+
+    print("src:",ax25.source, "dst:",ax25.destination, "path:",p, "control", hex(ax25.control.v[0]), "pid", ax25.pid, "info", ax25.info)
+    
+    if x is None:
+        print(f"   Unable to parse")
+    else:
+        print(f"   {x.data_type}")
+        
+
+    if x is not None and x.data_type == aprs.DataType.THIRD_PARTY_TRAFFIC:
+        # reparse the information field?
+        result["is-third-party"] = True
+        try:
+            payload_as_str = ax25.info[1:].decode("ascii")
+            ax25_third = AX25Frame.from_str(payload_as_str)
+            #print("   ", ax25_third)
+            p_third = [str(n) for n in ax25_third.path]
+            print("   ", "src:",ax25_third.source, "dst:",ax25_third.destination, "path:",p_third, "control", hex(ax25_third.control.v[0]), "pid", ax25_third.pid, "info", ax25_third.info)
+            info = ax25_third.info
+            x = aprs.InformationField.from_bytes(info)
+            _inc_stat(str(x.data_type))
+        except UnicodeDecodeError as e:
+            print("unable to ascii decode third party payload")
+            x = None
+            result["payload-type"] = None
+        except:
+            x = None
+            result["payload-type"] = None
+            _inc_stat("datatype-NoParseThirdParty")
+
+        print("datatype:", x)
+
+    # we have X, decode it..
+    if x is not None:
+        result["payload-type"] = str(x.data_type)
+
+        if  isinstance(x, aprs.PositionReport):
+            print("position")
+
+    return result 
 
 def process_raw_frame(frame):
     try:

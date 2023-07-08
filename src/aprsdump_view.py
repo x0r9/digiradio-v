@@ -23,19 +23,6 @@ def try_convert(bin):
             result += "."
     return result
 
-def clean_raw(raw):
-    """Remove any start 0x00 to aid parser"""
-    index = 0
-    for n, x in enumerate(raw):
-        if x != 0:
-            index = n
-            break
-            
-
-    result = raw[index:]
-    #print(raw)
-    #print(result)
-    return result
 
 stats_type = {}
 
@@ -44,10 +31,18 @@ def inc_stat(name):
 
 def show_frame(ts, raw_frame, filter_info=None):
 
-    #ax25 = aprs.functions.parse_frame_ax25(raw_frame)
-    raw_frame = clean_raw(raw_frame)
-    ax25 = AX25Frame.from_bytes(raw_frame)
+    xx = aprs_data.raw_frame(raw_frame)
+    print(xx)
 
+    #ax25 = aprs.functions.parse_frame_ax25(raw_frame)
+    raw_frame = aprs_data.clean_raw(raw_frame)
+    try:
+        ax25 = AX25Frame.from_bytes(raw_frame)
+    except Exception as e:
+        print(f"Unable to parse X25 due to {e}")
+        inc_stat("datatype-NoParse-X25")
+        return
+    
     try:
         x = aprs.InformationField.from_bytes(ax25.info)
         inc_stat(str(x.data_type))
@@ -69,11 +64,15 @@ def show_frame(ts, raw_frame, filter_info=None):
 
         if x is not None and x.data_type == aprs.DataType.THIRD_PARTY_TRAFFIC:
             # reparse the information field?
-            ax25_third = AX25Frame.from_str(ax25.info[1:].decode("ascii"))
-            #print("   ", ax25_third)
-            p_third = [str(n) for n in ax25_third.path]
-            print("   ", "src:",ax25_third.source, "dst:",ax25_third.destination, "path:",p_third, "control", hex(ax25_third.control.v[0]), "pid", ax25_third.pid, "info", ax25_third.info)
-            info = ax25_third.info
+            try:
+                payload_as_str = ax25.info[1:].decode("ascii")
+                ax25_third = AX25Frame.from_str(payload_as_str)
+                #print("   ", ax25_third)
+                p_third = [str(n) for n in ax25_third.path]
+                print("   ", "src:",ax25_third.source, "dst:",ax25_third.destination, "path:",p_third, "control", hex(ax25_third.control.v[0]), "pid", ax25_third.pid, "info", ax25_third.info)
+                info = ax25_third.info
+            except UnicodeDecodeError as e:
+                print("unable to ascii decode third party payload")
             #data_type = x.data_type
         # Parse the info packet type...
         print("    ", info)
